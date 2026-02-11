@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistem Parkir Pintar - Status Real-Time</title>
+    <style>
+        /* CSS untuk paparan moden dan mesra telefon */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #f0f2f5; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+        }
+        .container { 
+            background: white; 
+            width: 90%; 
+            max-width: 400px; 
+            padding: 30px; 
+            border-radius: 20px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1); 
+            text-align: center; 
+        }
+        h1 { color: #1a73e8; font-size: 24px; margin-bottom: 5px; }
+        .divider { 
+            width: 60px; height: 5px; background: #1a73e8; 
+            margin: 10px auto 25px; border-radius: 5px; 
+        }
+        .status-card { 
+            background: #f8f9fa; 
+            padding: 25px; 
+            border-radius: 15px; 
+            border: 2px solid #e9ecef; 
+        }
+        .count { 
+            font-size: 72px; 
+            font-weight: bold; 
+            color: #202124; 
+            margin: 10px 0; 
+        }
+        #status_msg { 
+            font-size: 18px; 
+            font-weight: 600; 
+            padding: 8px 15px; 
+            border-radius: 20px; 
+            display: inline-block; 
+        }
+        /* Warna Dinamik */
+        .available { background: #e6f4ea; color: #1e8e3e; }
+        .full { background: #fce8e6; color: #d93025; }
+        
+        .footer { font-size: 12px; color: #70757a; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Parkir Pintar</h1>
+        <div class="divider"></div>
+
+        <div class="status-card">
+            <div id="status_msg" class="available">Menyambung...</div>
+            <div class="count" id="parking_count">0</div>
+            <div style="color: #5f6368; letter-spacing: 1px;">BAKI SLOT KOSONG</div>
+        </div>
+
+        <div class="footer">
+            Data dikemaskini secara automatik<br>
+            Imbas QR untuk status terkini
+        </div>
+    </div>
+
+    <script>
+        // Sediakan butiran Blynk API anda
+        const AUTH_TOKEN = "W3glcLK5kCnTrtSj_XNpeGZ8HfH0pDqR"; // Token anda
+        const BLYNK_URL = "https://blynk.cloud/external/api/get?token=" + AUTH_TOKEN;
+
+        async function updateStatus() {
+            try {
+                // 1. Tarik data baki slot (V1)
+                const responseV1 = await fetch(`${BLYNK_URL}&V1`);
+                const slotValue = await responseV1.text();
+                
+                // Kemaskini nombor di skrin
+                const countElement = document.getElementById('parking_count');
+                countElement.innerText = slotValue;
+
+                // 2. Logik penukaran warna dan teks status
+                const statusElement = document.getElementById('status_msg');
+                
+                if (parseInt(slotValue) === 0) {
+                    statusElement.innerText = "PARKING PENUH ⚠️";
+                    statusElement.className = "full";
+                } else {
+                    statusElement.innerText = "ADA KEKOSONGAN ✅";
+                    statusElement.className = "available";
+                }
+
+            } catch (error) {
+                console.error("Ralat sambungan API:", error);
+                document.getElementById('status_msg').innerText = "Ralat Sambungan";
+            }
+        }
+
+        // Jalankan fungsi setiap 3 saat (Real-time)
+        setInterval(updateStatus, 3000);
+        updateStatus(); // Panggilan pertama semasa muat turun
+    </script>
+
+</body>
+</html>
